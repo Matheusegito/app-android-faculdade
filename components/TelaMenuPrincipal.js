@@ -1,18 +1,9 @@
 
 import React from 'react';
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity
-} from 'react-native';
+import {View,Text,StyleSheet,TouchableOpacity} from 'react-native';
 
-import {
-  createDrawerNavigator,
-  DrawerContentScrollView,
-  DrawerItemList
-} from '@react-navigation/drawer';
+import {createDrawerNavigator,DrawerContentScrollView,DrawerItemList} from '@react-navigation/drawer';
 
 const Drawer = createDrawerNavigator();
 
@@ -36,6 +27,14 @@ function Insights() {
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Insights</Text>
+    </View>
+  );
+}
+
+function SolitacaoDeReposicao() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Solicitação de Reposição </Text>
     </View>
   );
 }
@@ -103,6 +102,11 @@ export default function TelaMenuPrincipal({ onLogout }) {
       <Drawer.Screen
         name="Insights"
         component={Insights}
+      />
+
+      <Drawer.Screen
+        name="Solicitação de Reposição"
+        component={SolitacaoDeReposicao}
       />
 
     </Drawer.Navigator>
