@@ -82,10 +82,10 @@ export default function TelaMenuPrincipal({ onLogout }) {
 
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#234E70',
+          backgroundColor: '#E2211C',
         },
         headerTintColor: '#fff',
-        drawerActiveTintColor: '#234E70',
+        drawerActiveTintColor: '#E2211C',
         drawerActiveBackgroundColor: '#DCEAF5',
       }}
     >
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 25,
     fontWeight: 'bold',
-    color: '#234E70',
+    color: '#E2211C',
   },
 
   logoutContainer: {
