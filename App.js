@@ -1,27 +1,36 @@
 import 'react-native-gesture-handler';
 
-import React, { useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
-import TelaLogin from './components/TelaLogin';
-import TelaMenuPrincipal from './components/TelaMenuPrincipal';
+import Navegacao from './src/navegacao/Navegacao';
+import { inicializarDados } from './src/servicos/armazenamento';
+import { cores } from './src/utilitarios/cores';
 
 export default function App() {
-  const [telaAtual, setTelaAtual] = useState('login');
+  const [carregando, setCarregando] = useState(true);
 
-  if (telaAtual === 'menu') {
+  useEffect(() => {
+    inicializarDados().finally(() => setCarregando(false));
+  }, []);
+
+  if (carregando) {
     return (
-      <NavigationContainer>
-        <TelaMenuPrincipal
-          onLogout={() => setTelaAtual('login')}
-        />
-      </NavigationContainer>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: cores.fundo }}>
+        <ActivityIndicator size="large" color={cores.vermelho} />
+      </View>
     );
   }
 
   return (
-    <TelaLogin
-      onLoginSucesso={() => setTelaAtual('menu')}
-    />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <Navegacao />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
