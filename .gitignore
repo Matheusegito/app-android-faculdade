@@ -30,6 +30,16 @@ render.experimental.xml
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
+GoogleService-Info.plist
+# Chaves de conta de serviço do Firebase (nunca devem ir para o GitHub)
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+*.pem
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
 
 # Android Profiling
 *.hprof

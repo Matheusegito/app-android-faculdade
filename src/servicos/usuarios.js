@@ -1,34 +1,32 @@
-import { CHAVES, lerDados, salvarDados, gerarId } from './armazenamento';
+import { getDocs, addDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { colecaoUsuarios, docUsuario } from './colecoes';
 import { gerarHash } from '../utilitarios/criptografia';
 
-// FIREBASE: trocar o conteúdo destas funções por chamadas ao Firestore
-// (coleção "usuarios") e ao Firebase Authentication.
-
 export async function listarUsuarios() {
-  return lerDados(CHAVES.usuarios);
+  const snap = await getDocs(colecaoUsuarios);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function adicionarUsuario({ nome, usuario, senha, tipo }) {
-  const usuarios = await listarUsuarios();
   const nomeUsuario = usuario.trim().toLowerCase();
 
-  if (usuarios.some((u) => u.usuario === nomeUsuario)) {
+  // O Firestore não tem campo "único", então conferimos antes de criar.
+  const existente = await getDocs(query(colecaoUsuarios, where('usuario', '==', nomeUsuario)));
+  if (!existente.empty) {
     throw new Error('Já existe um usuário com esse nome de usuário.');
   }
 
-  const novoUsuario = {
-    id: gerarId(),
+  const dados = {
     nome: nome.trim(),
     usuario: nomeUsuario,
     senhaHash: await gerarHash(senha),
     tipo,
   };
 
-  await salvarDados(CHAVES.usuarios, [...usuarios, novoUsuario]);
-  return novoUsuario;
+  const ref = await addDoc(colecaoUsuarios, dados);
+  return { id: ref.id, ...dados };
 }
 
 export async function excluirUsuario(id) {
-  const usuarios = await listarUsuarios();
-  await salvarDados(CHAVES.usuarios, usuarios.filter((u) => u.id !== id));
+  await deleteDoc(docUsuario(id));
 }

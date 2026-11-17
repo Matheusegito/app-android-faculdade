@@ -1,10 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { __limpar } from 'firebase/firestore';
 
 import { inicializarDados } from '../src/servicos/armazenamento';
 import { listarProdutos, adicionarProduto, excluirProduto } from '../src/servicos/produtos';
 
 beforeEach(async () => {
-  await AsyncStorage.clear();
+  __limpar();
   await inicializarDados();
 });
 

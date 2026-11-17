@@ -1,25 +1,22 @@
-import { CHAVES, lerDados, salvarDados, gerarId } from './armazenamento';
+import { getDocs, addDoc, updateDoc, query, where } from 'firebase/firestore';
+import { colecaoSolicitacoes, docSolicitacao } from './colecoes';
 import { statusSolicitacao } from '../dados/dadosSolicitacoes';
-
-// FIREBASE: trocar o conteúdo destas funções por chamadas ao Firestore
-// (coleção "solicitacoes").
 
 // O administrador vê todas as solicitações; o professor vê só as dele.
 export async function listarSolicitacoes(usuario) {
-  const solicitacoes = await lerDados(CHAVES.solicitacoes);
-  const visiveis =
+  const consulta =
     usuario.tipo === 'admin'
-      ? solicitacoes
-      : solicitacoes.filter((s) => s.professorId === usuario.id);
+      ? colecaoSolicitacoes
+      : query(colecaoSolicitacoes, where('professorId', '==', usuario.id));
 
-  return visiveis.sort((a, b) => new Date(b.data) - new Date(a.data));
+  const snap = await getDocs(consulta);
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => new Date(b.data) - new Date(a.data));
 }
 
 export async function criarSolicitacao({ produto, quantidade, observacao, usuario }) {
-  const solicitacoes = await lerDados(CHAVES.solicitacoes);
-
-  const novaSolicitacao = {
-    id: gerarId(),
+  const nova = {
     produtoId: produto.id,
     produtoNome: `${produto.nome} (${produto.tamanho})`,
     quantidade,
@@ -30,14 +27,11 @@ export async function criarSolicitacao({ produto, quantidade, observacao, usuari
     data: new Date().toISOString(),
   };
 
-  await salvarDados(CHAVES.solicitacoes, [...solicitacoes, novaSolicitacao]);
-  return novaSolicitacao;
+  const ref = await addDoc(colecaoSolicitacoes, nova);
+  return { id: ref.id, ...nova };
 }
 
 // Nesta primeira versão aprovar/rejeitar só muda o status, sem mexer no estoque.
 export async function atualizarStatusSolicitacao(id, novoStatus) {
-  const solicitacoes = await lerDados(CHAVES.solicitacoes);
-  const atualizadas = solicitacoes.map((s) => (s.id === id ? { ...s, status: novoStatus } : s));
-
-  await salvarDados(CHAVES.solicitacoes, atualizadas);
+  await updateDoc(docSolicitacao(id), { status: novoStatus });
 }

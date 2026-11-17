@@ -1,30 +1,22 @@
-import { CHAVES, lerDados, salvarDados, gerarId } from './armazenamento';
-
-// FIREBASE: trocar o conteúdo destas funções por chamadas ao Firestore
-// (coleção "produtos"). As telas não precisam mudar.
+import { getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { colecaoProdutos, docProduto } from './colecoes';
 
 export async function listarProdutos() {
-  return lerDados(CHAVES.produtos);
+  const snap = await getDocs(colecaoProdutos);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function adicionarProduto(dados) {
-  const produtos = await listarProdutos();
-  const novoProduto = { id: gerarId(), ...dados };
-
-  await salvarDados(CHAVES.produtos, [...produtos, novoProduto]);
-  return novoProduto;
+  const ref = await addDoc(colecaoProdutos, dados);
+  return { id: ref.id, ...dados };
 }
 
 export async function editarProduto(id, dados) {
-  const produtos = await listarProdutos();
-  const atualizados = produtos.map((p) => (p.id === id ? { ...p, ...dados } : p));
-
-  await salvarDados(CHAVES.produtos, atualizados);
+  await updateDoc(docProduto(id), dados);
 }
 
 export async function excluirProduto(id) {
-  const produtos = await listarProdutos();
-  await salvarDados(CHAVES.produtos, produtos.filter((p) => p.id !== id));
+  await deleteDoc(docProduto(id));
 }
 
 export async function atualizarQuantidade(id, novaQuantidade) {
