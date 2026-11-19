@@ -7,6 +7,7 @@ import MenuLateral from './MenuLateral';
 import FormularioProduto from '../telas/FormularioProduto';
 import NovaSolicitacao from '../telas/NovaSolicitacao';
 import NovoUsuario from '../telas/NovoUsuario';
+import RegistrarSaida from '../telas/RegistrarSaida';
 import { SessaoContexto } from '../contexto/SessaoContexto';
 import { ehAdministrador, ehProfessor } from '../servicos/autenticacao';
 import { cores } from '../utilitarios/cores';
@@ -55,11 +56,18 @@ export default function Navegacao() {
               )}
 
               {ehProfessor(usuario) && (
-                <Stack.Screen
-                  name="NovaSolicitacao"
-                  component={NovaSolicitacao}
-                  options={{ title: 'Nova solicitação' }}
-                />
+                <>
+                  <Stack.Screen
+                    name="NovaSolicitacao"
+                    component={NovaSolicitacao}
+                    options={{ title: 'Nova solicitação' }}
+                  />
+                  <Stack.Screen
+                    name="RegistrarSaida"
+                    component={RegistrarSaida}
+                    options={{ title: 'Registrar saída' }}
+                  />
+                </>
               )}
             </>
           )}

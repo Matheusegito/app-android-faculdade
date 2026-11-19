@@ -2,18 +2,19 @@
 
 Banco: **Cloud Firestore** (NoSQL, orientado a documentos).
 
-O app tem 3 entidades, e cada uma vira uma coleção na raiz do Firestore:
-`usuarios`, `produtos` e `solicitacoes`. Categoria e status são listas fixas
+O app tem 4 entidades, e cada uma vira uma coleção na raiz do Firestore:
+`usuarios`, `produtos`, `solicitacoes` e `saidas`. Categoria e status são listas fixas
 no código e não têm coleção própria.
 
 ## Relacionamentos
 
 ```
 usuarios (professor) 1 ──── N solicitacoes N ──── 1 produtos
+usuarios (professor) 1 ──── N saidas       N ──── 1 produtos
 ```
 
-- Um professor faz várias solicitações.
-- Um produto pode aparecer em várias solicitações.
+- Um professor faz várias solicitações e registra várias saídas.
+- Um produto pode aparecer em várias solicitações e saídas.
 - O administrador só altera o status da solicitação. A versão atual não registra quem decidiu.
 
 ---
@@ -61,6 +62,22 @@ Pedidos de reposição feitos pelos professores.
 | status | string | Situação do pedido: `Pendente`, `Aprovada` ou `Rejeitada`. |
 | data | string | Data e hora de criação, em formato ISO 8601. |
 
+## Coleção `saidas`
+
+Itens que saíram do estoque, por exemplo um kimono entregue a um aluno.
+Ao registrar uma saída, a `quantidade` do produto é descontada com `increment()`.
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | string | ID do documento (gerado pelo Firestore, não é um campo salvo). |
+| produtoId | string | ID do produto que saiu (referência a `produtos`). |
+| produtoNome | string | Cópia de "nome (tamanho)" do produto no momento da saída. |
+| quantidade | number | Quantidade que saiu. Inteiro, maior que 0 e no máximo o que havia em estoque. |
+| aluno | string | Nome do aluno que recebeu o item. |
+| professorId | string | ID do professor que registrou (referência a `usuarios`). |
+| professorNome | string | Cópia do nome do professor no momento da saída. |
+| data | string | Data e hora do registro, em formato ISO 8601. |
+
 ---
 
 ## Decisões de modelagem
@@ -75,5 +92,5 @@ Pedidos de reposição feitos pelos professores.
 ## Possíveis evoluções
 
 - Registrar quem decidiu e quando: campos `decididaPor` e `dataDecisao` em `solicitacoes`.
-- Coleção `movimentacoes` (produtoId, tipo de entrada ou saída, quantidade, data, usuarioId) para ter histórico do estoque.
+- Registrar também as entradas (hoje só as saídas têm histórico, na coleção `saidas`).
 - Descontar do estoque ao aprovar uma solicitação (hoje só o status muda).

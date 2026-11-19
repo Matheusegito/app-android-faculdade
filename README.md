@@ -20,6 +20,8 @@ O app tem dois perfis de usuário:
 | Cadastrar, editar e excluir produtos (com foto) | ✔ | — |
 | Ajustar a quantidade em estoque | ✔ | — |
 | Criar solicitação de reposição | — | ✔ |
+| Registrar saída de item para um aluno (desconta do estoque) | — | ✔ |
+| Histórico de saídas (aba "Saídas" no Estoque) | ✔ (vê todas) | ✔ (só as suas) |
 | Aprovar ou rejeitar solicitações (vê todas) | ✔ | — (vê só as suas) |
 | Gerenciar usuários | ✔ | — |
 

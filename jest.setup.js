@@ -40,10 +40,19 @@ jest.mock('firebase/firestore', () => {
     setDoc: async (ref, dados) => {
       tabela(ref.nome).set(ref.id, { ...dados });
     },
-    updateDoc: async (ref, dados) => {
-      const atual = tabela(ref.nome).get(ref.id);
-      tabela(ref.nome).set(ref.id, { ...atual, ...dados });
+    getDoc: async (ref) => {
+      const dados = tabela(ref.nome).get(ref.id);
+      return { id: ref.id, exists: () => dados !== undefined, data: () => ({ ...dados }) };
     },
+    updateDoc: async (ref, dados) => {
+      const atual = { ...tabela(ref.nome).get(ref.id) };
+      for (const [campo, valor] of Object.entries(dados)) {
+        // increment(n) soma n ao valor que já está salvo
+        atual[campo] = valor?.__incremento !== undefined ? (atual[campo] ?? 0) + valor.__incremento : valor;
+      }
+      tabela(ref.nome).set(ref.id, atual);
+    },
+    increment: (n) => ({ __incremento: n }),
     deleteDoc: async (ref) => {
       tabela(ref.nome).delete(ref.id);
     },

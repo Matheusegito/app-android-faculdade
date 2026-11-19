@@ -6,8 +6,16 @@ import { formatarPreco, estaComEstoqueBaixo } from '../utilitarios/formatacao';
 
 // Card de um produto na lista do estoque.
 // O administrador vê os botões de quantidade, editar e excluir.
-// O professor vê o botão de solicitar reposição.
-export default function ItemProduto({ produto, ehAdmin, aoEditar, aoExcluir, aoAlterarQuantidade, aoSolicitar }) {
+// O professor vê os botões de registrar saída e de solicitar reposição.
+export default function ItemProduto({
+  produto,
+  ehAdmin,
+  aoEditar,
+  aoExcluir,
+  aoAlterarQuantidade,
+  aoSolicitar,
+  aoRegistrarSaida,
+}) {
   const estoqueBaixo = estaComEstoqueBaixo(produto);
 
   return (
@@ -63,10 +71,17 @@ export default function ItemProduto({ produto, ehAdmin, aoEditar, aoExcluir, aoA
           </View>
         </View>
       ) : (
-        <TouchableOpacity style={styles.botaoSolicitar} onPress={() => aoSolicitar(produto)}>
-          <Ionicons name="repeat-outline" size={16} color={cores.vermelho} />
-          <Text style={styles.textoSolicitar}>Solicitar reposição</Text>
-        </TouchableOpacity>
+        <View style={styles.acoesProfessor}>
+          <TouchableOpacity style={styles.botaoProfessor} onPress={() => aoRegistrarSaida(produto)}>
+            <Ionicons name="arrow-down-circle-outline" size={16} color={cores.vermelho} />
+            <Text style={styles.textoProfessor}>Registrar saída</Text>
+          </TouchableOpacity>
+          <View style={styles.divisor} />
+          <TouchableOpacity style={styles.botaoProfessor} onPress={() => aoSolicitar(produto)}>
+            <Ionicons name="repeat-outline" size={16} color={cores.vermelho} />
+            <Text style={styles.textoProfessor}>Solicitar reposição</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -173,16 +188,25 @@ const styles = StyleSheet.create({
     padding: 6,
     marginLeft: 8,
   },
-  botaoSolicitar: {
+  acoesProfessor: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: cores.borda,
   },
-  textoSolicitar: {
+  botaoProfessor: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+  },
+  divisor: {
+    width: 1,
+    backgroundColor: cores.borda,
+  },
+  textoProfessor: {
     color: cores.vermelho,
     fontWeight: '600',
     marginLeft: 6,

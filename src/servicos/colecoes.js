@@ -6,12 +6,14 @@ export const NOMES = {
   usuarios: 'usuarios',
   produtos: 'produtos',
   solicitacoes: 'solicitacoes',
+  saidas: 'saidas',
 };
 
 // Referências das coleções
 export const colecaoUsuarios = collection(db, NOMES.usuarios);
 export const colecaoProdutos = collection(db, NOMES.produtos);
 export const colecaoSolicitacoes = collection(db, NOMES.solicitacoes);
+export const colecaoSaidas = collection(db, NOMES.saidas);
 
 // Referência de um documento específico (para editar e excluir)
 export const docUsuario = (id) => doc(db, NOMES.usuarios, id);

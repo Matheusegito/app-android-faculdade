@@ -3,7 +3,9 @@ import { View, TextInput, FlatList, Alert, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
+import Abas from '../componentes/Abas';
 import ItemProduto from '../componentes/ItemProduto';
+import ListaSaidas from '../componentes/ListaSaidas';
 import SeletorOpcoes from '../componentes/SeletorOpcoes';
 import BotaoFlutuante from '../componentes/BotaoFlutuante';
 import { ListaVazia } from '../componentes/Avisos';
@@ -12,6 +14,12 @@ import { ehAdministrador } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { categorias } from '../dados/dadosProdutos';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
+
+const abas = [
+  { valor: 'produtos', rotulo: 'Produtos' },
+  { valor: 'saidas', rotulo: 'Saídas' },
+];
 
 export default function Estoque({ navigation }) {
   const { usuario } = useSessao();
@@ -20,9 +28,17 @@ export default function Estoque({ navigation }) {
   const [produtos, setProdutos] = useState([]);
   const [pesquisa, setPesquisa] = useState('');
   const [categoria, setCategoria] = useState('Todas');
+  const [carregando, setCarregando] = useState(true);
+  const [aba, setAba] = useState('produtos');
 
   async function carregarProdutos() {
-    setProdutos(await listarProdutos());
+    setCarregando(true);
+    try {
+      setProdutos(await listarProdutos());
+    } catch (erro) {
+      avisarErroDeConexao('carregar os produtos');
+    }
+    setCarregando(false);
   }
 
   useFocusEffect(
@@ -37,9 +53,16 @@ export default function Estoque({ navigation }) {
     return nomeConfere && categoriaConfere;
   });
 
+  // Depois de salvar no banco, atualiza só o produto alterado na lista,
+  // sem precisar baixar tudo de novo.
   async function alterarQuantidade(produto, valor) {
-    await atualizarQuantidade(produto.id, produto.quantidade + valor);
-    carregarProdutos();
+    const novaQuantidade = Math.max(0, produto.quantidade + valor);
+    try {
+      await atualizarQuantidade(produto.id, novaQuantidade);
+      setProdutos((lista) => lista.map((p) => (p.id === produto.id ? { ...p, quantidade: novaQuantidade } : p)));
+    } catch (erro) {
+      avisarErroDeConexao('atualizar a quantidade');
+    }
   }
 
   function confirmarExclusao(produto) {
@@ -49,8 +72,12 @@ export default function Estoque({ navigation }) {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await excluirProduto(produto.id);
-          carregarProdutos();
+          try {
+            await excluirProduto(produto.id);
+            setProdutos((lista) => lista.filter((p) => p.id !== produto.id));
+          } catch (erro) {
+            avisarErroDeConexao('excluir o produto');
+          }
         },
       },
     ]);
@@ -58,43 +85,54 @@ export default function Estoque({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.filtros}>
-        <View style={styles.pesquisa}>
-          <Ionicons name="search" size={18} color={cores.textoSecundario} />
-          <TextInput
-            style={styles.campoPesquisa}
-            placeholder="Pesquisar por nome"
-            placeholderTextColor={cores.textoSecundario}
-            value={pesquisa}
-            onChangeText={setPesquisa}
-          />
-        </View>
-        <SeletorOpcoes
-          horizontal
-          opcoes={['Todas', ...categorias]}
-          selecionada={categoria}
-          aoSelecionar={setCategoria}
-        />
-      </View>
+      <Abas opcoes={abas} selecionada={aba} aoSelecionar={setAba} />
 
-      <FlatList
-        data={produtosFiltrados}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.lista}
-        ListEmptyComponent={<ListaVazia mensagem="Nenhum produto encontrado." />}
-        renderItem={({ item }) => (
-          <ItemProduto
-            produto={item}
-            ehAdmin={ehAdmin}
-            aoEditar={(produto) => navigation.navigate('FormularioProduto', { produto })}
-            aoExcluir={confirmarExclusao}
-            aoAlterarQuantidade={alterarQuantidade}
-            aoSolicitar={(produto) => navigation.navigate('NovaSolicitacao', { produtoId: produto.id })}
-          />
-        )}
-      />
+      {aba === 'saidas' ? (
+        <ListaSaidas usuario={usuario} />
+      ) : (
+        <>
+          <View style={styles.filtros}>
+            <View style={styles.pesquisa}>
+              <Ionicons name="search" size={18} color={cores.textoSecundario} />
+              <TextInput
+                style={styles.campoPesquisa}
+                placeholder="Pesquisar por nome"
+                placeholderTextColor={cores.textoSecundario}
+                value={pesquisa}
+                onChangeText={setPesquisa}
+              />
+            </View>
+            <SeletorOpcoes
+              horizontal
+              opcoes={['Todas', ...categorias]}
+              selecionada={categoria}
+              aoSelecionar={setCategoria}
+            />
+          </View>
 
-      {ehAdmin && <BotaoFlutuante onPress={() => navigation.navigate('FormularioProduto')} />}
+          <FlatList
+            data={produtosFiltrados}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.lista}
+            refreshing={carregando}
+            onRefresh={carregarProdutos}
+            ListEmptyComponent={carregando ? null : <ListaVazia mensagem="Nenhum produto encontrado." />}
+            renderItem={({ item }) => (
+              <ItemProduto
+                produto={item}
+                ehAdmin={ehAdmin}
+                aoEditar={(produto) => navigation.navigate('FormularioProduto', { produto })}
+                aoExcluir={confirmarExclusao}
+                aoAlterarQuantidade={alterarQuantidade}
+                aoSolicitar={(produto) => navigation.navigate('NovaSolicitacao', { produtoId: produto.id })}
+                aoRegistrarSaida={(produto) => navigation.navigate('RegistrarSaida', { produto })}
+              />
+            )}
+          />
+
+          {ehAdmin && <BotaoFlutuante onPress={() => navigation.navigate('FormularioProduto')} />}
+        </>
+      )}
     </View>
   );
 }
