@@ -12,6 +12,7 @@ import { ehAdministrador } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { categorias } from '../dados/dadosProdutos';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 // Serve tanto para cadastrar quanto para editar.
 // Se vier um produto pelos parâmetros da navegação, a tela entra em modo de edição.
@@ -74,13 +75,17 @@ export default function FormularioProduto({ navigation, route }) {
     };
 
     setSalvando(true);
-    if (produtoEditado) {
-      await editarProduto(produtoEditado.id, dados);
-    } else {
-      await adicionarProduto(dados);
+    try {
+      if (produtoEditado) {
+        await editarProduto(produtoEditado.id, dados);
+      } else {
+        await adicionarProduto(dados);
+      }
+      navigation.goBack();
+    } catch (erro) {
+      avisarErroDeConexao('salvar o produto');
+      setSalvando(false);
     }
-    setSalvando(false);
-    navigation.goBack();
   }
 
   return (

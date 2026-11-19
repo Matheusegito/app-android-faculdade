@@ -25,14 +25,17 @@ export default function Login() {
 
     setErro('');
     setCarregando(true);
-    const usuarioLogado = await fazerLogin(usuario, senha);
-    setCarregando(false);
-
-    if (usuarioLogado) {
-      entrar(usuarioLogado);
-    } else {
+    try {
+      const usuarioLogado = await fazerLogin(usuario, senha);
+      if (usuarioLogado) {
+        entrar(usuarioLogado);
+        return;
+      }
       setErro('Usuário ou senha incorretos.');
+    } catch (erro) {
+      setErro('Sem conexão com o servidor. Verifique a internet e tente novamente.');
     }
+    setCarregando(false);
   }
 
   return (

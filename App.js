@@ -14,7 +14,10 @@ export default function App() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    inicializarDados().finally(() => setCarregando(false));
+    // Sem internet o app abre mesmo assim; o login mostra o aviso de conexão.
+    inicializarDados()
+      .catch(() => console.warn('Não foi possível preparar os dados iniciais no Firebase.'))
+      .finally(() => setCarregando(false));
   }, []);
 
   if (carregando) {

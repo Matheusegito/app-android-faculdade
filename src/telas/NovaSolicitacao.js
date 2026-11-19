@@ -10,6 +10,7 @@ import { criarSolicitacao } from '../servicos/solicitacoes';
 import { ehProfessor } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 export default function NovaSolicitacao({ navigation, route }) {
   const { usuario } = useSessao();
@@ -21,7 +22,9 @@ export default function NovaSolicitacao({ navigation, route }) {
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    listarProdutos().then(setProdutos);
+    listarProdutos()
+      .then(setProdutos)
+      .catch(() => avisarErroDeConexao('carregar os produtos'));
   }, []);
 
   if (!ehProfessor(usuario)) {
@@ -42,11 +45,14 @@ export default function NovaSolicitacao({ navigation, route }) {
     }
 
     setEnviando(true);
-    await criarSolicitacao({ produto, quantidade: qtd, observacao, usuario });
-    setEnviando(false);
-
-    Alert.alert('Solicitação enviada', 'O administrador vai analisar o seu pedido.');
-    navigation.goBack();
+    try {
+      await criarSolicitacao({ produto, quantidade: qtd, observacao, usuario });
+      Alert.alert('Solicitação enviada', 'O administrador vai analisar o seu pedido.');
+      navigation.goBack();
+    } catch (erro) {
+      avisarErroDeConexao('enviar a solicitação');
+      setEnviando(false);
+    }
   }
 
   const opcoesProdutos = produtos.map((p) => ({ valor: p.id, rotulo: `${p.nome} (${p.tamanho})` }));

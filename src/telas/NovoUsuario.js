@@ -9,6 +9,7 @@ import { adicionarUsuario } from '../servicos/usuarios';
 import { ehAdministrador } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 const tiposUsuario = [
   { valor: 'professor', rotulo: 'Professor' },
@@ -47,7 +48,12 @@ export default function NovoUsuario({ navigation }) {
       await adicionarUsuario({ nome, usuario, senha, tipo });
       navigation.goBack();
     } catch (erro) {
-      Alert.alert('Não foi possível cadastrar', erro.message);
+      // Erro do Firebase = problema de conexão. Outro erro = nossa validação (ex.: usuário repetido).
+      if (erro.name === 'FirebaseError') {
+        avisarErroDeConexao('cadastrar o usuário');
+      } else {
+        Alert.alert('Não foi possível cadastrar', erro.message);
+      }
     }
     setSalvando(false);
   }

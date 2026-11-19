@@ -3,7 +3,9 @@ import { colecaoProdutos, docProduto } from './colecoes';
 
 export async function listarProdutos() {
   const snap = await getDocs(colecaoProdutos);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
 export async function adicionarProduto(dados) {

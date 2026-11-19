@@ -11,6 +11,7 @@ import { useSessao } from '../contexto/SessaoContexto';
 import { statusSolicitacao } from '../dados/dadosSolicitacoes';
 import { formatarData } from '../utilitarios/formatacao';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 const coresStatus = {
   Pendente: { fundo: cores.laranjaClaro, texto: cores.laranja },
@@ -22,11 +23,18 @@ export default function Solicitacoes({ navigation }) {
   const { usuario } = useSessao();
   const ehAdmin = ehAdministrador(usuario);
   const [solicitacoes, setSolicitacoes] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
   async function carregarSolicitacoes() {
-    if (usuario) {
+    if (!usuario) return;
+
+    setCarregando(true);
+    try {
       setSolicitacoes(await listarSolicitacoes(usuario));
+    } catch (erro) {
+      avisarErroDeConexao('carregar as solicitações');
     }
+    setCarregando(false);
   }
 
   useFocusEffect(
@@ -36,8 +44,12 @@ export default function Solicitacoes({ navigation }) {
   );
 
   async function mudarStatus(id, novoStatus) {
-    await atualizarStatusSolicitacao(id, novoStatus);
-    carregarSolicitacoes();
+    try {
+      await atualizarStatusSolicitacao(id, novoStatus);
+      setSolicitacoes((lista) => lista.map((s) => (s.id === id ? { ...s, status: novoStatus } : s)));
+    } catch (erro) {
+      avisarErroDeConexao('atualizar a solicitação');
+    }
   }
 
   function renderizarSolicitacao({ item }) {
@@ -94,7 +106,9 @@ export default function Solicitacoes({ navigation }) {
         ListHeaderComponent={
           <Text style={styles.titulo}>{ehAdmin ? 'Todas as solicitações' : 'Minhas solicitações'}</Text>
         }
-        ListEmptyComponent={<ListaVazia mensagem="Nenhuma solicitação encontrada." />}
+        refreshing={carregando}
+        onRefresh={carregarSolicitacoes}
+        ListEmptyComponent={carregando ? null : <ListaVazia mensagem="Nenhuma solicitação encontrada." />}
       />
 
       {ehProfessor(usuario) && <BotaoFlutuante onPress={() => navigation.navigate('NovaSolicitacao')} />}

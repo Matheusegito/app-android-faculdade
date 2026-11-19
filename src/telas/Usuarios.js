@@ -9,13 +9,21 @@ import { listarUsuarios, excluirUsuario } from '../servicos/usuarios';
 import { ehAdministrador } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 export default function Usuarios({ navigation }) {
   const { usuario: usuarioLogado } = useSessao();
   const [usuarios, setUsuarios] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
   async function carregarUsuarios() {
-    setUsuarios(await listarUsuarios());
+    setCarregando(true);
+    try {
+      setUsuarios(await listarUsuarios());
+    } catch (erro) {
+      avisarErroDeConexao('carregar os usuários');
+    }
+    setCarregando(false);
   }
 
   useFocusEffect(
@@ -35,8 +43,12 @@ export default function Usuarios({ navigation }) {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await excluirUsuario(usuario.id);
-          carregarUsuarios();
+          try {
+            await excluirUsuario(usuario.id);
+            setUsuarios((lista) => lista.filter((u) => u.id !== usuario.id));
+          } catch (erro) {
+            avisarErroDeConexao('excluir o usuário');
+          }
         },
       },
     ]);
@@ -81,7 +93,9 @@ export default function Usuarios({ navigation }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.lista}
         renderItem={renderizarUsuario}
-        ListEmptyComponent={<ListaVazia mensagem="Nenhum usuário cadastrado." />}
+        refreshing={carregando}
+        onRefresh={carregarUsuarios}
+        ListEmptyComponent={carregando ? null : <ListaVazia mensagem="Nenhum usuário cadastrado." />}
       />
 
       <BotaoFlutuante icone="person-add" onPress={() => navigation.navigate('NovoUsuario')} />

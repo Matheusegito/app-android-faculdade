@@ -11,20 +11,37 @@ import { useSessao } from '../contexto/SessaoContexto';
 import { statusSolicitacao } from '../dados/dadosSolicitacoes';
 import { estaComEstoqueBaixo } from '../utilitarios/formatacao';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 export default function Insights() {
   const { usuario } = useSessao();
   const [produtos, setProdutos] = useState([]);
   const [solicitacoes, setSolicitacoes] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+
+  async function carregarResumo() {
+    if (!usuario) return;
+
+    setCarregando(true);
+    try {
+      setProdutos(await listarProdutos());
+      setSolicitacoes(await listarSolicitacoes(usuario));
+    } catch (erro) {
+      avisarErroDeConexao('carregar o resumo do estoque');
+    }
+    setCarregando(false);
+  }
 
   // Recarrega os dados sempre que a tela volta a aparecer.
   useFocusEffect(
     useCallback(() => {
-      if (!usuario) return;
-      listarProdutos().then(setProdutos);
-      listarSolicitacoes(usuario).then(setSolicitacoes);
+      carregarResumo();
     }, [usuario])
   );
+
+  // Enquanto os dados ainda não chegaram, mostra "–" em vez de 0.
+  const aindaSemDados = carregando && produtos.length === 0;
+  const exibir = (numero) => (aindaSemDados ? '–' : numero);
 
   const totalUnidades = produtos.reduce((soma, p) => soma + p.quantidade, 0);
   const produtosEstoqueBaixo = produtos.filter(estaComEstoqueBaixo);
@@ -36,19 +53,19 @@ export default function Insights() {
       <Text style={styles.subtitulo}>Resumo do estoque da academia</Text>
 
       <View style={styles.linhaCards}>
-        <CardIndicador icone="pricetags-outline" valor={produtos.length} titulo="Produtos cadastrados" />
-        <CardIndicador icone="cube-outline" valor={totalUnidades} titulo="Unidades disponíveis" />
+        <CardIndicador icone="pricetags-outline" valor={exibir(produtos.length)} titulo="Produtos cadastrados" />
+        <CardIndicador icone="cube-outline" valor={exibir(totalUnidades)} titulo="Unidades disponíveis" />
       </View>
       <View style={styles.linhaCards}>
         <CardIndicador
           icone="alert-circle-outline"
-          valor={produtosEstoqueBaixo.length}
+          valor={exibir(produtosEstoqueBaixo.length)}
           titulo="Com estoque baixo"
           destaque={produtosEstoqueBaixo.length > 0}
         />
         <CardIndicador
           icone="time-outline"
-          valor={pendentes}
+          valor={exibir(pendentes)}
           titulo={ehAdministrador(usuario) ? 'Solicitações pendentes' : 'Minhas pendentes'}
           destaque={pendentes > 0}
         />
@@ -65,7 +82,9 @@ export default function Insights() {
       data={produtosEstoqueBaixo}
       keyExtractor={(item) => item.id}
       ListHeaderComponent={cabecalho}
-      ListEmptyComponent={<ListaVazia mensagem="Nenhum produto com estoque baixo." />}
+      refreshing={carregando}
+      onRefresh={carregarResumo}
+      ListEmptyComponent={carregando ? null : <ListaVazia mensagem="Nenhum produto com estoque baixo." />}
       renderItem={({ item }) => (
         <View style={styles.itemBaixo}>
           <View style={{ flex: 1 }}>

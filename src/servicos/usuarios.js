@@ -4,7 +4,9 @@ import { gerarHash } from '../utilitarios/criptografia';
 
 export async function listarUsuarios() {
   const snap = await getDocs(colecaoUsuarios);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
 export async function adicionarUsuario({ nome, usuario, senha, tipo }) {
