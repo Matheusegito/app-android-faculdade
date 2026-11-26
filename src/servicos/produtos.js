@@ -9,11 +9,19 @@ export async function listarProdutos() {
 }
 
 export async function adicionarProduto(dados) {
+  if (dados.quantidade < 0) {
+    throw new Error('A quantidade não pode ser negativa.');
+  }
+
   const ref = await addDoc(colecaoProdutos, dados);
   return { id: ref.id, ...dados };
 }
 
 export async function editarProduto(id, dados) {
+  if (dados.quantidade < 0) {
+    throw new Error('A quantidade não pode ser negativa.');
+  }
+
   await updateDoc(docProduto(id), dados);
 }
 
