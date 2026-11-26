@@ -44,11 +44,6 @@ npx expo start --tunnel
 
 Na primeira abertura, o app cria os dados de demonstração no Firestore automaticamente.
 
-| Perfil | Usuário | Senha |
-|---|---|---|
-| Administrador | `admin` | `123456` |
-| Professor | `professor` | `123456` |
-
 ## Testes
 
 ```bash
@@ -56,21 +51,6 @@ npm test
 ```
 
 Os testes rodam contra um Firestore simulado em memória, sem acessar o banco real.
-
-## Estrutura do projeto
-
-```
-src/
-  componentes/   componentes reutilizáveis (botões, campos, cards)
-  contexto/      sessão do usuário logado
-  dados/         dados iniciais de demonstração
-  navegacao/     rotas (Stack e menu lateral)
-  servicos/      acesso ao Firestore (produtos, solicitações, usuários, login)
-  telas/         telas do app
-  utilitarios/   cores, formatação e hash de senha
-docs/            documentação
-__tests__/       testes automatizados
-```
 
 ## Banco de dados
 
