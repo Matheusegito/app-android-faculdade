@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -60,9 +60,13 @@ export default function Usuarios({ navigation }) {
 
     return (
       <View style={styles.card}>
-        <View style={styles.avatar}>
-          <Text style={styles.inicial}>{item.nome.charAt(0).toUpperCase()}</Text>
-        </View>
+        {item.foto ? (
+          <Image source={{ uri: item.foto }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatar}>
+            <Text style={styles.inicial}>{item.nome.charAt(0).toUpperCase()}</Text>
+          </View>
+        )}
 
         <View style={styles.informacoes}>
           <Text style={styles.nome}>

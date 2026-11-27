@@ -30,6 +30,7 @@ Pessoas que acessam o app.
 | usuario | string | Nome de login, em minúsculas. Deve ser único. |
 | senhaHash | string | Hash SHA-256 da senha. A senha em texto nunca é salva. |
 | tipo | string | Perfil de acesso: `admin` ou `professor`. |
+| foto | string ou null | URI da foto de perfil, escolhida tocando no avatar do menu lateral. Opcional. |
 
 ## Coleção `produtos`
 

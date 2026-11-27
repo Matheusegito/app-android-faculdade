@@ -1,4 +1,4 @@
-import { getDocs, addDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { colecaoUsuarios, docUsuario } from './colecoes';
 import { gerarHash } from '../utilitarios/criptografia';
 
@@ -27,6 +27,11 @@ export async function adicionarUsuario({ nome, usuario, senha, tipo }) {
 
   const ref = await addDoc(colecaoUsuarios, dados);
   return { id: ref.id, ...dados };
+}
+
+// Foto de perfil mostrada no menu lateral. Guarda a URI da imagem escolhida na galeria.
+export async function atualizarFotoUsuario(id, foto) {
+  await updateDoc(docUsuario(id), { foto });
 }
 
 export async function excluirUsuario(id) {

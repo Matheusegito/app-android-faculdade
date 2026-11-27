@@ -2,20 +2,43 @@ import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-na
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 
 import Insights from '../telas/Insights';
 import Estoque from '../telas/Estoque';
 import Solicitacoes from '../telas/Solicitacoes';
 import Usuarios from '../telas/Usuarios';
 import { ehAdministrador } from '../servicos/autenticacao';
+import { atualizarFotoUsuario } from '../servicos/usuarios';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
+import { avisarErroDeConexao } from '../utilitarios/erros';
 
 const Drawer = createDrawerNavigator();
 
 function ConteudoDoMenu(props) {
-  const { usuario, sair } = useSessao();
+  const { usuario, entrar, sair } = useSessao();
   const margens = useSafeAreaInsets();
+
+  // Toque na foto: escolhe uma imagem da galeria, salva no Firestore
+  // e atualiza a sessão para a foto nova aparecer na hora.
+  async function trocarFoto() {
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+    if (resultado.canceled) return;
+
+    const foto = resultado.assets[0].uri;
+    try {
+      await atualizarFotoUsuario(usuario.id, foto);
+      entrar({ ...usuario, foto });
+    } catch (erro) {
+      avisarErroDeConexao('salvar a foto');
+    }
+  }
 
   function confirmarSaida() {
     Alert.alert('Sair', 'Deseja encerrar a sessão?', [
@@ -29,8 +52,26 @@ function ConteudoDoMenu(props) {
       <DrawerContentScrollView {...props}>
         <View style={styles.perfil}>
           <Image source={require('../../assets/ImagemGracieBarra.jpg')} style={styles.logo} />
-          <Text style={styles.nome}>{usuario?.nome}</Text>
-          <Text style={styles.tipo}>{ehAdministrador(usuario) ? 'Administrador' : 'Professor'}</Text>
+
+          <View style={styles.cartaoUsuario}>
+            <TouchableOpacity onPress={trocarFoto} accessibilityLabel="Trocar foto de perfil">
+              {usuario?.foto ? (
+                <Image source={{ uri: usuario.foto }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarVazio]}>
+                  <Text style={styles.inicial}>{usuario?.nome?.charAt(0).toUpperCase()}</Text>
+                </View>
+              )}
+              <View style={styles.selo}>
+                <Ionicons name="camera" size={12} color={cores.branco} />
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.textosUsuario}>
+              <Text style={styles.nome}>{usuario?.nome}</Text>
+              <Text style={styles.tipo}>{ehAdministrador(usuario) ? 'Administrador' : 'Professor'}</Text>
+            </View>
+          </View>
         </View>
 
         <DrawerItemList {...props} />
@@ -106,7 +147,48 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 10,
+    marginBottom: 14,
+  },
+  cartaoUsuario: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    marginHorizontal: 16,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: cores.fundo,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  avatarVazio: {
+    backgroundColor: cores.vermelhoClaro,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inicial: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: cores.vermelho,
+  },
+  selo: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: cores.vermelho,
+    borderWidth: 2,
+    borderColor: cores.branco,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textosUsuario: {
+    flex: 1,
+    marginLeft: 12,
   },
   nome: {
     fontSize: 16,
