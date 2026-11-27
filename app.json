@@ -13,6 +13,7 @@
         }
       ],
       "expo-font",
+      "expo-notifications",
       "expo-status-bar"
     ],
     "extra": {

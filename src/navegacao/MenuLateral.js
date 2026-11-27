@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +11,7 @@ import Solicitacoes from '../telas/Solicitacoes';
 import Usuarios from '../telas/Usuarios';
 import { ehAdministrador } from '../servicos/autenticacao';
 import { atualizarFotoUsuario } from '../servicos/usuarios';
+import { monitorarEstoqueBaixo } from '../servicos/notificacoes';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
 import { avisarErroDeConexao } from '../utilitarios/erros';
@@ -93,6 +95,14 @@ function icone(nome) {
 
 export default function MenuLateral() {
   const { usuario } = useSessao();
+  const ehAdmin = ehAdministrador(usuario);
+
+  // Só o administrador recebe as notificações de estoque baixo.
+  // O retorno do useEffect para o monitoramento quando ele sai do app.
+  useEffect(() => {
+    if (!ehAdmin) return;
+    return monitorarEstoqueBaixo();
+  }, [ehAdmin, usuario?.id]);
 
   return (
     <Drawer.Navigator

@@ -24,6 +24,7 @@ O app tem dois perfis de usuário:
 | Histórico de saídas (aba "Saídas" no Estoque) | ✔ (vê todas) | ✔ (só as suas) |
 | Aprovar ou rejeitar solicitações (vê todas) | ✔ | — (vê só as suas) |
 | Gerenciar usuários | ✔ | — |
+| Notificação quando um produto fica com estoque baixo | ✔ | — |
 
 ## Como rodar
 

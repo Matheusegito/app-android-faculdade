@@ -23,3 +23,9 @@ export function calcularValorTotal(quantidade, precoUnitario) {
 export function estaComEstoqueBaixo(produto) {
   return produto.quantidade <= produto.quantidadeMinima;
 }
+
+// Produtos que estão com estoque baixo agora e não estavam antes.
+// baixosAntes: Set com os ids que já estavam baixos na leitura anterior.
+export function produtosQueFicaramComEstoqueBaixo(baixosAntes, produtos) {
+  return produtos.filter((p) => estaComEstoqueBaixo(p) && !baixosAntes.has(p.id));
+}

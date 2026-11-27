@@ -1,5 +1,15 @@
-import { getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getDocs, addDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { colecaoProdutos, docProduto } from './colecoes';
+
+// Escuta a coleção em tempo real: chama aoMudar com a lista toda a cada alteração.
+// Devolve a função que encerra a escuta.
+export function observarProdutos(aoMudar) {
+  return onSnapshot(
+    colecaoProdutos,
+    (snap) => aoMudar(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    () => console.warn('Conexão em tempo real com os produtos perdida.')
+  );
+}
 
 export async function listarProdutos() {
   const snap = await getDocs(colecaoProdutos);
