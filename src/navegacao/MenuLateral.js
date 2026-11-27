@@ -3,7 +3,6 @@ import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-na
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as ImagePicker from 'expo-image-picker';
 
 import Insights from '../telas/Insights';
 import Estoque from '../telas/Estoque';
@@ -15,6 +14,7 @@ import { monitorarEstoqueBaixo } from '../servicos/notificacoes';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
 import { avisarErroDeConexao } from '../utilitarios/erros';
+import { escolherImagem } from '../utilitarios/imagem';
 
 const Drawer = createDrawerNavigator();
 
@@ -22,18 +22,12 @@ function ConteudoDoMenu(props) {
   const { usuario, entrar, sair } = useSessao();
   const margens = useSafeAreaInsets();
 
-  // Toque na foto: escolhe uma imagem da galeria, salva no Firestore
+  // Toque na foto: tira uma foto com a câmera ou escolhe da galeria, salva no Firestore
   // e atualiza a sessão para a foto nova aparecer na hora.
   async function trocarFoto() {
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
-    if (resultado.canceled) return;
+    const foto = await escolherImagem();
+    if (!foto) return;
 
-    const foto = resultado.assets[0].uri;
     try {
       await atualizarFotoUsuario(usuario.id, foto);
       entrar({ ...usuario, foto });

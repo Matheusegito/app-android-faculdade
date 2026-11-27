@@ -9,7 +9,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "O aplicativo precisa acessar suas fotos para cadastrar a imagem dos produtos."
+          "photosPermission": "O aplicativo precisa acessar suas fotos para cadastrar a imagem dos produtos.",
+          "cameraPermission": "O aplicativo precisa da câmera para tirar fotos dos produtos e do perfil."
         }
       ],
       "expo-font",

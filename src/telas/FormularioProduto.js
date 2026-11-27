@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Alert, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 
 import Botao from '../componentes/Botao';
 import CampoTexto from '../componentes/CampoTexto';
@@ -13,6 +12,7 @@ import { useSessao } from '../contexto/SessaoContexto';
 import { categorias } from '../dados/dadosProdutos';
 import { cores } from '../utilitarios/cores';
 import { avisarErroDeConexao } from '../utilitarios/erros';
+import { escolherImagem } from '../utilitarios/imagem';
 
 // Serve tanto para cadastrar quanto para editar.
 // Se vier um produto pelos parâmetros da navegação, a tela entra em modo de edição.
@@ -33,16 +33,11 @@ export default function FormularioProduto({ navigation, route }) {
     return <AcessoNegado />;
   }
 
+  // Pergunta se a foto vem da câmera ou da galeria.
   async function escolherFoto() {
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
-
-    if (!resultado.canceled) {
-      setFoto(resultado.assets[0].uri);
+    const uri = await escolherImagem();
+    if (uri) {
+      setFoto(uri);
     }
   }
 
@@ -99,7 +94,7 @@ export default function FormularioProduto({ navigation, route }) {
               <Ionicons name="camera-outline" size={32} color={cores.textoSecundario} />
             </View>
           )}
-          <Text style={styles.textoFoto}>{foto ? 'Trocar foto' : 'Escolher foto da galeria'}</Text>
+          <Text style={styles.textoFoto}>{foto ? 'Trocar foto' : 'Tirar foto ou escolher da galeria'}</Text>
         </TouchableOpacity>
 
         <CampoTexto rotulo="Nome" placeholder="Ex.: Kimono Branco" value={nome} onChangeText={setNome} />
