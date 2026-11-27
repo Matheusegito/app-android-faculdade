@@ -57,6 +57,7 @@ Pedidos de reposição feitos pelos professores.
 | produtoId | string | ID do produto solicitado (referência a `produtos`). |
 | produtoNome | string | Cópia de "nome (tamanho)" do produto no momento do pedido. |
 | quantidade | number | Quantidade desejada. Inteiro, maior que 0. |
+| precoUnitario | number ou null | Cópia do preço do produto no momento do pedido. O valor da solicitação (`quantidade × precoUnitario`) aparece para o administrador. Null se o produto não tem preço. |
 | observacao | string | Justificativa do pedido. Pode ser vazia. |
 | professorId | string | ID do professor que fez o pedido (referência a `usuarios`). |
 | professorNome | string | Cópia do nome do professor no momento do pedido. |

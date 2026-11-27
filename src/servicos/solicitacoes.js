@@ -20,6 +20,8 @@ export async function criarSolicitacao({ produto, quantidade, observacao, usuari
     produtoId: produto.id,
     produtoNome: `${produto.nome} (${produto.tamanho})`,
     quantidade,
+    // Cópia do preço no momento do pedido, para o administrador ver quanto vai custar.
+    precoUnitario: produto.preco ?? null,
     observacao: observacao.trim(),
     professorId: usuario.id,
     professorNome: usuario.nome,

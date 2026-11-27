@@ -9,7 +9,7 @@ import { listarSolicitacoes, atualizarStatusSolicitacao } from '../servicos/soli
 import { ehAdministrador, ehProfessor } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { statusSolicitacao } from '../dados/dadosSolicitacoes';
-import { formatarData } from '../utilitarios/formatacao';
+import { formatarData, formatarPreco, calcularValorTotal } from '../utilitarios/formatacao';
 import { cores } from '../utilitarios/cores';
 import { avisarErroDeConexao } from '../utilitarios/erros';
 
@@ -54,6 +54,7 @@ export default function Solicitacoes({ navigation }) {
 
   function renderizarSolicitacao({ item }) {
     const corStatus = coresStatus[item.status];
+    const valorTotal = calcularValorTotal(item.quantidade, item.precoUnitario);
 
     return (
       <View style={styles.card}>
@@ -67,6 +68,12 @@ export default function Solicitacoes({ navigation }) {
         <Text style={styles.detalhe}>
           Quantidade: <Text style={styles.negrito}>{item.quantidade}</Text>
         </Text>
+        {ehAdmin && valorTotal !== null && (
+          <Text style={styles.detalhe}>
+            Valor: <Text style={styles.negrito}>{formatarPreco(valorTotal)}</Text> ({item.quantidade} ×{' '}
+            {formatarPreco(item.precoUnitario)})
+          </Text>
+        )}
         {ehAdmin && (
           <Text style={styles.detalhe}>
             Professor: <Text style={styles.negrito}>{item.professorNome}</Text>

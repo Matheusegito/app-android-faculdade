@@ -11,6 +11,7 @@ import { ehProfessor } from '../servicos/autenticacao';
 import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
 import { avisarErroDeConexao } from '../utilitarios/erros';
+import { formatarPreco, calcularValorTotal } from '../utilitarios/formatacao';
 
 // Aberta de dois jeitos:
 // - pelo botão "Solicitar reposição" de um produto no Estoque: o produto vem fixo e não pode ser trocado;
@@ -64,6 +65,10 @@ export default function NovaSolicitacao({ navigation, route }) {
 
   const opcoesProdutos = produtos.map((p) => ({ valor: p.id, rotulo: `${p.nome} (${p.tamanho})` }));
 
+  // Prévia do valor que vai junto com a solicitação para o administrador.
+  const produtoAtual = produtoFixo ?? produtos.find((p) => p.id === produtoId);
+  const valorEstimado = calcularValorTotal(parseInt(quantidade, 10), produtoAtual?.preco);
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
@@ -92,6 +97,12 @@ export default function NovaSolicitacao({ navigation, route }) {
           value={quantidade}
           onChangeText={setQuantidade}
         />
+
+        {valorEstimado !== null && (
+          <Text style={styles.valor}>
+            Valor da solicitação: <Text style={styles.negrito}>{formatarPreco(valorEstimado)}</Text>
+          </Text>
+        )}
 
         <CampoTexto
           rotulo="Observação (opcional)"
@@ -147,5 +158,11 @@ const styles = StyleSheet.create({
   negrito: {
     fontWeight: 'bold',
     color: cores.texto,
+  },
+  valor: {
+    fontSize: 14,
+    color: cores.textoSecundario,
+    marginTop: -6,
+    marginBottom: 14,
   },
 });

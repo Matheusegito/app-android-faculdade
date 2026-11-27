@@ -12,6 +12,14 @@ export function formatarData(dataIso) {
   return `${dia}/${mes}/${data.getFullYear()}`;
 }
 
+// Valor total de uma solicitação (quantidade × preço). null quando o produto não tem preço.
+export function calcularValorTotal(quantidade, precoUnitario) {
+  if (precoUnitario === null || precoUnitario === undefined || !(quantidade > 0)) {
+    return null;
+  }
+  return quantidade * precoUnitario;
+}
+
 export function estaComEstoqueBaixo(produto) {
   return produto.quantidade <= produto.quantidadeMinima;
 }
