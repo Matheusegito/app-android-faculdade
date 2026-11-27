@@ -114,6 +114,7 @@ export default function Estoque({ navigation }) {
             data={produtosFiltrados}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.lista}
+            keyboardShouldPersistTaps="handled"
             refreshing={carregando}
             onRefresh={carregarProdutos}
             ListEmptyComponent={carregando ? null : <ListaVazia mensagem="Nenhum produto encontrado." />}
@@ -124,7 +125,7 @@ export default function Estoque({ navigation }) {
                 aoEditar={(produto) => navigation.navigate('FormularioProduto', { produto })}
                 aoExcluir={confirmarExclusao}
                 aoAlterarQuantidade={alterarQuantidade}
-                aoSolicitar={(produto) => navigation.navigate('NovaSolicitacao', { produtoId: produto.id })}
+                aoSolicitar={(produto) => navigation.navigate('NovaSolicitacao', { produto })}
                 aoRegistrarSaida={(produto) => navigation.navigate('RegistrarSaida', { produto })}
               />
             )}

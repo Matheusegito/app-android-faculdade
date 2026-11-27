@@ -14,6 +14,14 @@
       ],
       "expo-font",
       "expo-status-bar"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "109cfd0c-8505-4b5c-9f24-9b2a6f10c9ae"
+      }
+    },
+    "android": {
+      "package": "com.matheusegito.appandroidfaculdade"
+    }
   }
 }

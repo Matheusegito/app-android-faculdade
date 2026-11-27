@@ -1,4 +1,5 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Image, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { cores } from '../utilitarios/cores';
@@ -17,6 +18,18 @@ export default function ItemProduto({
   aoRegistrarSaida,
 }) {
   const estoqueBaixo = estaComEstoqueBaixo(produto);
+
+  // Quantas unidades os botões + e − somam ou tiram de uma vez (ex.: chegaram 5 kimonos).
+  const [passo, setPasso] = useState('1');
+
+  function ajustar(sinal) {
+    const unidades = parseInt(passo, 10);
+    if (isNaN(unidades) || unidades <= 0) {
+      Alert.alert('Atenção', 'Informe uma quantidade maior que zero.');
+      return;
+    }
+    aoAlterarQuantidade(produto, sinal * unidades);
+  }
 
   return (
     <View style={[styles.card, estoqueBaixo && styles.cardBaixo]}>
@@ -53,10 +66,18 @@ export default function ItemProduto({
       {ehAdmin ? (
         <View style={styles.acoes}>
           <View style={styles.contador}>
-            <TouchableOpacity style={styles.botaoContador} onPress={() => aoAlterarQuantidade(produto, -1)}>
+            <TouchableOpacity style={styles.botaoContador} onPress={() => ajustar(-1)}>
               <Ionicons name="remove" size={18} color={cores.texto} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.botaoContador} onPress={() => aoAlterarQuantidade(produto, 1)}>
+            <TextInput
+              style={styles.campoPasso}
+              value={passo}
+              onChangeText={setPasso}
+              keyboardType="number-pad"
+              maxLength={4}
+              selectTextOnFocus
+            />
+            <TouchableOpacity style={styles.botaoContador} onPress={() => ajustar(1)}>
               <Ionicons name="add" size={18} color={cores.texto} />
             </TouchableOpacity>
           </View>
@@ -182,6 +203,18 @@ const styles = StyleSheet.create({
     backgroundColor: cores.fundo,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 8,
+  },
+  campoPasso: {
+    width: 48,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    textAlign: 'center',
+    fontSize: 15,
+    color: cores.texto,
+    paddingVertical: 0,
     marginRight: 8,
   },
   botaoAcao: {

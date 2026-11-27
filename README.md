@@ -29,6 +29,8 @@ O app tem dois perfis de usuário:
 
 Pré-requisitos: [Node.js](https://nodejs.org) (versão LTS) e o app **Expo Go** no celular Android (ou um emulador do Android Studio).
 
+Antes da primeira execução, copie o arquivo `.env.example` para `.env` e preencha com a configuração do projeto no Firebase (Console do Firebase > Configurações do projeto > Seus apps). O `.env` não vai para o GitHub.
+
 ```bash
 npm install
 npm start
@@ -43,6 +45,20 @@ npx expo start --tunnel
 ### Login de demonstração
 
 Na primeira abertura, o app cria os dados de demonstração no Firestore automaticamente.
+
+## Gerar o APK
+
+O APK é gerado na nuvem pelo EAS Build (precisa de uma conta Expo gratuita). O build não recebe o `.env`, então as mesmas variáveis precisam estar cadastradas no EAS uma vez, para o ambiente `preview`:
+
+```bash
+npm install -g eas-cli
+eas login
+eas env:create --environment preview --visibility plaintext --name EXPO_PUBLIC_FIREBASE_API_KEY --value "..."
+# repita para as outras variáveis do .env.example
+eas build -p android --profile preview
+```
+
+Ao terminar, o EAS mostra um link para baixar o `.apk` e instalar no celular.
 
 ## Testes
 

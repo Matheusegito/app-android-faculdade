@@ -12,27 +12,34 @@ import { useSessao } from '../contexto/SessaoContexto';
 import { cores } from '../utilitarios/cores';
 import { avisarErroDeConexao } from '../utilitarios/erros';
 
+// Aberta de dois jeitos:
+// - pelo botão "Solicitar reposição" de um produto no Estoque: o produto vem fixo e não pode ser trocado;
+// - pelo botão + da tela de Solicitações: o professor escolhe o produto na lista.
 export default function NovaSolicitacao({ navigation, route }) {
   const { usuario } = useSessao();
+  const produtoFixo = route.params?.produto;
 
   const [produtos, setProdutos] = useState([]);
-  const [produtoId, setProdutoId] = useState(route.params?.produtoId ?? null);
+  const [produtoId, setProdutoId] = useState(null);
   const [quantidade, setQuantidade] = useState('');
   const [observacao, setObservacao] = useState('');
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
+    // Com o produto fixo, a lista não é usada.
+    if (produtoFixo) return;
+
     listarProdutos()
       .then(setProdutos)
       .catch(() => avisarErroDeConexao('carregar os produtos'));
-  }, []);
+  }, [produtoFixo]);
 
   if (!ehProfessor(usuario)) {
     return <AcessoNegado />;
   }
 
   async function enviar() {
-    const produto = produtos.find((p) => p.id === produtoId);
+    const produto = produtoFixo ?? produtos.find((p) => p.id === produtoId);
     const qtd = parseInt(quantidade, 10);
 
     if (!produto) {
@@ -60,10 +67,23 @@ export default function NovaSolicitacao({ navigation, route }) {
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
-        <Text style={styles.rotulo}>Produto</Text>
-        <SeletorOpcoes opcoes={opcoesProdutos} selecionada={produtoId} aoSelecionar={setProdutoId} />
-
-        <View style={styles.espaco} />
+        {produtoFixo ? (
+          <View style={styles.resumo}>
+            <Text style={styles.nomeProduto}>{produtoFixo.nome}</Text>
+            <Text style={styles.detalhe}>
+              {produtoFixo.categoria} · Tam. {produtoFixo.tamanho}
+            </Text>
+            <Text style={styles.detalhe}>
+              Em estoque: <Text style={styles.negrito}>{produtoFixo.quantidade}</Text>
+            </Text>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.rotulo}>Produto</Text>
+            <SeletorOpcoes opcoes={opcoesProdutos} selecionada={produtoId} aoSelecionar={setProdutoId} />
+            <View style={styles.espaco} />
+          </>
+        )}
 
         <CampoTexto
           rotulo="Quantidade desejada"
@@ -104,5 +124,28 @@ const styles = StyleSheet.create({
   },
   espaco: {
     height: 8,
+  },
+  resumo: {
+    backgroundColor: cores.branco,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+  nomeProduto: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: cores.texto,
+    marginBottom: 4,
+  },
+  detalhe: {
+    fontSize: 14,
+    color: cores.textoSecundario,
+    marginTop: 2,
+  },
+  negrito: {
+    fontWeight: 'bold',
+    color: cores.texto,
   },
 });
